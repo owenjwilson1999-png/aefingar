@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kyn nafnorða</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: white;
+    width: 95%;
+    max-width: 420px;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .word {
+    font-size: 22px;
+    margin: 10px 0;
+  }
+
+  button, .home-btn {
+    padding: 12px 20px;
+    min-height: 44px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+.home-btn {
+  display: inline-block;
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f9f9f9;
+  box-sizing: border-box;
+}
+
+.home-btn:hover {
+  background-color: #f0f0f0;
+}
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  button.option {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    transition: transform 0.1s;
+    min-height: 60px;
+  }
+
+  button.option:active {
+    transform: scale(0.97);
+  }
+
+  .m { background: #3b82f6; }
+  .f { background: #ec4899; }
+  .n { background: #166534; }
+
+  /* 💚 neon correct */
+  .correct { background: #39ff14 !important; }
+
+  /* 🟥 darker wrong */
+  .wrong { background: #ff1744 !important; }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+
+  .nav button {
+    flex: 1;
+    margin: 5px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<a href="https://owenjwilson.github.io/aefingar/home.html" class="home-btn">
+  &#8592; Heim
+</a>
+
+  <h1>Kyn nafnorða</h1>
+
+  <div class="word" id="word"></div>
+
+  <div class="buttons">
+    <button class="option m" id="mBtn"></button>
+    <button class="option f" id="fBtn"></button>
+    <button class="option n" id="nBtn"></button>
+  </div>
+
+  <div class="nav">
+    <button onclick="back()">Back</button>
+    <button onclick="next()">Next</button>
+  </div>
+</div>
+
+<script>
+const WORDS = [
+  { is: "aðalréttur", gender: "m", en: "main course" },
+  { is: "aðgangskort", gender: "n", en: "access card" },
+  { is: "aðgangur", gender: "m", en: "access" },
+  { is: "afgreiðslukona", gender: "f", en: "female shop assistant" },
+  { is: "afgreiðslumaður", gender: "m", en: "male shop assistant" },
+  { is: "afi", gender: "m", en: "grandfather" },
+  { is: "afmæli", gender: "n", en: "birthday" },
+  { is: "afmæliskaka", gender: "f", en: "birthday cake" },
+  { is: "afmælissöngur", gender: "m", en: "birthday song" },
+  { is: "afmælisveisla", gender: "f", en: "birthday party" },
+  { is: "afrit", gender: "n", en: "copy" },
+  { is: "áhugi", gender: "m", en: "interest" }
+];
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+let order = shuffle(WORDS);
+let index = 0;
+let locked = false;
+
+function lastLetter(word) {
+  return word[word.length - 1].toLowerCase();
+}
+
+function isGroup2(word) {
+  return ["a","i","u","é"].includes(lastLetter(word));
+}
+
+function suffix(word, g) {
+  const g2 = isGroup2(word);
+
+  if (g === "m") return g2 ? "-nn" : "-inn";
+  if (g === "f") return g2 ? "-n" : "-in";
+  if (g === "n") return g2 ? "-ð" : "-ið";
+}
+
+function render() {
+  const w = order[index];
+
+  document.getElementById("word").innerHTML =
+    `${w.is} <span style="color:#666">(${w.en})</span>`;
+
+  setButton("mBtn", "m");
+  setButton("fBtn", "f");
+  setButton("nBtn", "n");
+
+  locked = false;
+}
+
+function setButton(id, g) {
+  const w = order[index];
+  const btn = document.getElementById(id);
+
+  btn.className = `option ${g}`;
+  btn.innerText = suffix(w.is, g);
+
+  btn.onclick = () => answer(g, btn);
+}
+
+function answer(g, btn) {
+  if (locked) return;
+  locked = true;
+
+  const w = order[index];
+  const correct = w.gender;
+
+  const buttons = {
+    m: document.getElementById("mBtn"),
+    f: document.getElementById("fBtn"),
+    n: document.getElementById("nBtn")
+  };
+
+  if (g === correct) {
+    btn.classList.add("correct");
+  } else {
+    btn.classList.add("wrong");
+    buttons[correct].classList.add("correct");
+  }
+}
+
+function next() {
+  index = (index + 1) % order.length;
+  render();
+}
+
+function back() {
+  index = (index - 1 + order.length) % order.length;
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
